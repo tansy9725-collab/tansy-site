@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tansy</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #1a1823;
+    --card: #211e2e;
+    --text: #e8e6f0;
+    --muted: #7b7890;
+    --accent: #a78bfa;
+    --border: #2e2a3d;
+    --tag-bg: #2a2638;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    padding: 0 24px;
+  }
+
+  /* noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 80px 0 64px;
+    text-align: center;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
+  }
+
+  .avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2e2a3d, #3d3659);
+    margin: 0 auto 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    border: 3px solid var(--card);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+
+  .hero-name {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(42px, 8vw, 64px);
+    font-weight: 400;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  .hero-tagline {
+    font-size: 15px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    line-height: 1.6;
+  }
+
+  .hero-tagline .zh {
+    display: block;
+    font-size: 14px;
+    color: var(--accent);
+    margin-top: 6px;
+    font-weight: 400;
+  }
+
+  .divider {
+    width: 40px;
+    height: 1px;
+    background: var(--border);
+    margin: 40px auto;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .card:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+    transform: translateY(-2px);
+  }
+
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+  .card:nth-child(4) { animation-delay: 0.4s; }
+  .card:nth-child(5) { animation-delay: 0.5s; }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+
+  /* about */
+  .about-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .about-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .about-item:last-child { border-bottom: none; }
+
+  .about-item .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* project */
+  .project-card {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .project-img {
+    width: 100%;
+    height: 160px;
+    background: linear-gradient(135deg, #2a2638 0%, #322d47 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .project-img::after {
+    content: '答辩现场照片';
+    font-size: 12px;
+    color: #4a4560;
+  }
+
+  .project-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .project-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  .tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    background: var(--tag-bg);
+    color: var(--muted);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.04em;
+  }
+
+  /* content */
+  .content-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .content-info { flex: 1; }
+
+  .content-platform {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .content-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent);
+    color: #1a1823;
+    font-size: 13px;
+    padding: 10px 18px;
+    border-radius: 100px;
+    text-decoration: none;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    transition: background 0.2s, transform 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: 20px;
+  }
+
+  .btn:hover {
+    background: #c4b5fd;
+    transform: translateY(-1px);
+  }
+
+  /* contact */
+  .contact-text {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+
+  .contact-email {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .contact-email:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* footer */
+  .footer {
+    text-align: center;
+    padding: 48px 0 40px;
+    font-size: 12px;
+    color: #2e2a3d;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.6s forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 0 16px; }
+    .card { padding: 22px 20px; }
+    .hero { padding: 60px 0 48px; }
+    .content-row { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .btn { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="avatar">🌙</div>
+    <h1 class="hero-name">Tansy</h1>
+    <p class="hero-tagline">
+      Longterm thinker. Idealist.
+      <span class="zh">长期主义者，理想主义者</span>
+    </p>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ABOUT -->
+  <div class="card">
+    <p class="section-label">关于我</p>
+    <div class="about-items">
+      <div class="about-item">
+        <span class="dot"></span>
+        <span>天津理工大学 · 汉语言文学专业在读</span>
+      </div>
+      <div class="about-item">
+        <span class="dot"></span>
+        <span>拥抱 AI 时代的变化，关注 AI 运营和产品</span>
+      </div>
+      <div class="about-item">
+        <span class="dot"></span>
+        <span>学习能力强，善于挖掘学习资源</span>
+      </div>
+      <div class="about-item">
+        <span class="dot"></span>
+        <span>喜欢表达与演说，拥有很好的镜头表现力</span>
+      </div>
+      <div class="about-item">
+        <span class="dot"></span>
+        <span>热爱探索有趣的事物，积累能量中 ⚡</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="card">
+    <p class="section-label">内容创作</p>
+    <p class="content-desc" style="margin-bottom: 20px; font-size: 13px; color: var(--muted);">K12 教育分享者</p>
+    <div class="content-row" style="margin-bottom: 16px;">
+      <div class="content-info">
+        <p class="content-platform">小红书</p>
+      </div>
+      <a href="https://www.xiaohongshu.com/user/profile/63c64bdf0000000027029228" target="_blank" class="btn">去看看 →</a>
+    </div>
+    <div class="content-row">
+      <div class="content-info">
+        <p class="content-platform">抖音</p>
+      </div>
+      <a href="https://v.douyin.com/iPtY4Ewp/" target="_blank" class="btn">去看看 →</a>
+    </div>
+  </div>
+
+  <!-- PROJECT -->
+  <div class="card">
+    <p class="section-label">项目</p>
+    <div>
+      <h2 class="project-name">铼蒽灵境</h2>
+      <p class="project-sub">全场景沉浸式 MR 数字文旅平台</p>
+      <div class="tags">
+        <span class="tag">MR</span>
+        <span class="tag">文化科技</span>
+        <span class="tag">创新创业</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="card">
+    <p class="section-label">联系我</p>
+    <p class="contact-text">欢迎来找我聊，<br>关于 AI、关于想法、关于任何事。</p>
+    <a href="mailto:tansy9725@gmail.com" class="contact-email">
+      ✉ tansy9725@gmail.com
+    </a>
+  </div>
+
+  <div class="footer">© 2025 Tansy</div>
+
+</div>
+</body>
+</html>
